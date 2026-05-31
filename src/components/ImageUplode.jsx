@@ -1,42 +1,76 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 
-function ImageUplode(props) {
-  const ShowImageHandler = (e) => {
-    const file = e.target.files[0];
+function ImageUpload({ ImageUplodeHandler }) {
+  const inputRef = useRef(null);
+  const [dragging, setDragging] = useState(false);
 
-    if (file) {
-      props.ImageUplodeHandler(file);
+  const handleFile = (file) => {
+    if (file && file.type.startsWith("image/")) {
+      ImageUplodeHandler(file);
     }
   };
 
+  const handleChange = (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+  };
+
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-2xl">
-      <label
-        htmlFor="file-upload"
-        className="block w-full cursor-pointer border-2 border-dashed border-blue-500 rounded-lg p-8 text-center hover:border-blue-700 transition-all duration-300"
+    <div className="upload-wrapper">
+      <div
+        className={`upload-zone ${dragging ? "dragging" : ""}`}
+        onClick={() => inputRef.current.click()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
       >
         <input
+          ref={inputRef}
           type="file"
-          id="file-upload"
-          className="hidden"
           accept="image/*"
-          onChange={ShowImageHandler}
+          onChange={handleChange}
+          style={{ display: "none" }}
         />
 
-        <div className="flex flex-col items-center gap-3">
-          <span className="text-4xl">📸</span>
-
-          <span className="text-lg font-semibold text-gray-700">
-            Click to Upload Image
-          </span>
-
-          <p className="text-sm text-gray-500">
-            JPG, PNG, WEBP files supported
-          </p>
+        <div className="upload-icon-ring">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
         </div>
-      </label>
+
+        <p className="upload-title">Drop your image here</p>
+        <p className="upload-sub">or click to browse — JPG, PNG, WEBP</p>
+
+        <div className="upload-formats">
+          <span>JPG</span>
+          <span>PNG</span>
+          <span>WEBP</span>
+          <span>Up to 20MB</span>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default ImageUplode;
+export default ImageUpload;
